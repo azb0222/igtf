@@ -1,0 +1,1 @@
+whenever a push occurs to the app repo, cloud build build the container, push it to artifact registry, redpeloy to cloud run 

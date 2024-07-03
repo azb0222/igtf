@@ -1,0 +1,5 @@
+django
+gunicorn
+psycopg2-binary
+django-storages[google]
+django-environ
