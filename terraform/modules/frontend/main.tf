@@ -28,17 +28,17 @@ resource "google_cloud_run_service_iam_binding" "frontend_cr_iam" {
 }
 
 // CLOUD BUILD
+// TODO: can configure https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/cloudbuild_trigger#example-usage---cloudbuild-trigger-repo Cloud Build Trigger Repo 
 resource "google_service_account" "cloudbuild_sa" {
   account_id = "cloudbuild-sa"
 }
 
 resource "google_project_iam_member" "cloudbuild_sa_act_as" {
-  project = var.project 
+  project = var.project
   role    = "roles/iam.serviceAccountUser"
   member  = "serviceAccount:${google_service_account.cloudbuild_sa.email}"
 }
 
-// TODO: still getting:  The service account running this build does not have permission to write logs. To fix this, grant the Logs Writer (roles/logging.logWriter) role to the service account. 
 resource "google_project_iam_member" "cloudbuild_sa_logs_writer" {
   project = var.project
   role    = "roles/logging.logWriter"
@@ -47,8 +47,15 @@ resource "google_project_iam_member" "cloudbuild_sa_logs_writer" {
 
 resource "google_project_iam_member" "cloudbuild_sa_push_to_ar" {
   project = var.project
-  role    = "roles/artifactregistry.admin"
-  member  = "serviceAccount:${google_service_account.cloudbuild_sa.email}"
+  role   = "roles/artifactregistry.writer"
+  member = "serviceAccount:${google_service_account.cloudbuild_sa.email}"
+}
+
+// TODO: MAKE MORE GRANULAR, DEF DONT NEED ADMIN ALSO, check over 
+resource "google_project_iam_member" "cloudbuild_sa_admin" {
+  project = var.project
+  role   = "roles/artifactregistry.admin"
+  member = "serviceAccount:${google_service_account.cloudbuild_sa.email}"
 }
 
 resource "google_project_iam_member" "cloudbuild_sa_run_cloud_run" {
@@ -58,6 +65,7 @@ resource "google_project_iam_member" "cloudbuild_sa_run_cloud_run" {
 }
 
 resource "google_cloudbuild_trigger" "frontend_cloudbuild_trigger" {
+  # name = "ingenius-frontend-build"
   location = var.region
 
   trigger_template {
@@ -71,9 +79,11 @@ resource "google_cloudbuild_trigger" "frontend_cloudbuild_trigger" {
     google_project_iam_member.cloudbuild_sa_logs_writer,
     google_project_iam_member.cloudbuild_sa_push_to_ar,
     google_project_iam_member.cloudbuild_sa_run_cloud_run,
+    google_project_iam_member.cloudbuild_sa_admin, 
   ]
 
   build {
+    timeout = "2400s"
     step {
       name = "gcr.io/cloud-builders/docker"
       args = ["build", "-t", "${var.region}-docker.pkg.dev/${var.project}/${google_artifact_registry_repository.frontend_repo.name}/frontend", "."]
@@ -81,6 +91,7 @@ resource "google_cloudbuild_trigger" "frontend_cloudbuild_trigger" {
     step {
       name = "gcr.io/cloud-builders/docker"
       args = ["push", "${var.region}-docker.pkg.dev/${var.project}/${google_artifact_registry_repository.frontend_repo.name}/frontend"]
+      timeout = "1200s"
     }
     step {
       name = "gcr.io/cloud-builders/gcloud"
@@ -91,3 +102,4 @@ resource "google_cloudbuild_trigger" "frontend_cloudbuild_trigger" {
     }
   }
 }
+

@@ -1,4 +1,4 @@
 provider "google" {
   region = "us-central1"
-  project = "ingenius-app-dev-env"
+  project = "dev-ingenius-app-173049" 
 }

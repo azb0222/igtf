@@ -1,21 +1,10 @@
-resource "google_storage_bucket" "tf_state" {
-  name          = "ingenius-app-state"
-  location      = var.region
-  force_destroy = true
-  storage_class = "STANDARD"
+# data "google_storage_bucket" "tf_state" {
+#   name = var.dev_state_bucket 
+# }
 
-  depends_on = [google_project.dev]
-  versioning {
-    enabled = true
+terraform {
+  backend "gcs" {
+    bucket = "dev-ingenius-app-173049-tf-state"
+    prefix = "terraform/state"
   }
-
-  uniform_bucket_level_access = true
-}
-
-
-terraform { 
-    backend "gcs" { 
-        bucket = "ingenius-app-state" 
-        prefix = "terraform/state"
-    }
 }
