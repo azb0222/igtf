@@ -6,6 +6,5 @@
     <mapping directory="$PROJECT_DIR$/test-deployments/app_cicd/frontend" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/test-deployments/app_cicd/tf" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/test-deployments/graphql" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/test-deployments/graphql/graphqlPlayground/app" vcs="Git" />
   </component>
 </project>
